@@ -37,7 +37,7 @@ class Player:
         opponent = their_move
         me = my_move
 
-        print(f"My move: {me}\nOpponent Move: {opponent}")
+        print(f"Player 1 Move: {me}\nPlayer 2 Move: {opponent}")
 
 
 # A player that always plays 'rock'
@@ -115,7 +115,9 @@ class Game:
 
     # Figures out who the winner is by comparing scores.
     def announce_winner(self):
-        if self.p1_score > self.p2_score:
+        if self.p1_score == self.p2_score:
+            return 'Tie Game!'
+        elif self.p1_score > self.p2_score:
             return 'Player 1'
         else:
             return 'Player 2'
@@ -127,10 +129,10 @@ class Game:
             self.rounds += 1
             print(f"Tie!")
         elif beats(p1, p2):
-            print(f"{p1} wins!")
+            print(f"{p1.capitalize()} wins!")
             self.p1_score += 1
         else:
-            print(f"{p2} wins!")
+            print(f"{p2.capitalize()} wins!")
             self.p2_score += 1
 
 
