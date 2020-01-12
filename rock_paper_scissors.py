@@ -1,12 +1,4 @@
 # Rock Paper Scissors game by Antonio Vargas
-# The game has two players
-# In a single round of the game, each player secretly chooses one of the three throws.
-# Players reveal their moves at the same time.
-# If both pick same throw, no winner
-# Else rock beats scissors
-# Else paper beats rock
-# Else scissors beat paper
-# Players can play a single round, or best of any number of rounds.
 
 # !/usr/bin/env python3
 
@@ -17,14 +9,28 @@ import time
 and reports both Player's scores each round."""
 
 moves = ['rock', 'paper', 'scissors']
+opp_move = []
 """The Player class is the parent class for all of the Players
 in this game"""
 
 
+# A player that always plays 'rock'
 class Player:
     def move(self):
+        return 'rock'
+
+    def learn(self, my_move, their_move):
+        print(f"{Player.__name__}: {my_move}")
+
+
+# A human player
+class HumanPlayer(Player):
+    def move(self):
         while True:
-            string = input(f"Your move, type 'Rock', 'Paper, or 'Scissors  :> ")
+            string = input(f"Your move, type "
+                           f"'Rock', "
+                           f"'Paper, "
+                           f"or 'Scissors  :> ")
             if string.lower() not in ('rock', 'paper', 'scissors'):
                 print(f"Please enter the correct move!")
             else:
@@ -32,18 +38,7 @@ class Player:
         return string
 
     def learn(self, my_move, their_move):
-        # The game should call each player's move method once in each round, to get that player's move.
-        # After each round, it should call the remembering method to tell each player what the other player's move was.
-        opponent = their_move
-        me = my_move
-
-        print(f"Player 1 Move: {me}\nPlayer 2 Move: {opponent}")
-
-
-# A player that always plays 'rock'
-class Rock(Player):
-    def move(self):
-        return 'rock'
+        print(f"{HumanPlayer.__name__}: {my_move}")
 
 
 # A player that chooses its moves randomly.
@@ -51,11 +46,31 @@ class RandomPlayer(Player):
     def move(self):
         return random.choice(moves)
 
+    def learn(self, my_move, their_move):
+        print(f"{RandomPlayer.__name__}: {my_move}")
+
 
 # A player that cycles through the three moves
 class ThreeMoves(Player):
     def move(self):
         return moves[Game.position]
+
+    def learn(self, my_move, their_move):
+        print(f"{ThreeMoves.__name__}: {my_move}")
+
+
+class CopyCat(Player):
+    def move(self):
+        if not opp_move:
+            return random.choice(moves)
+        else:
+            print(opp_move[0])
+            return opp_move[0]
+
+    def learn(self, my_move, their_move):
+        # print("This method got called!")
+        opp_move.insert(0, their_move)
+        print(f"{CopyCat.__name__}: {my_move}")
 
 
 def beats(one, two):
@@ -68,7 +83,8 @@ def beats(one, two):
 
 
 class Game:
-    position = -1  # Iterator to help with the subclass ThreeMoves cycle through moves.
+    # Iterator to help with the subclass ThreeMoves cycle through moves.
+    position = -1
 
     def __init__(self, p1, p2):
         self.p1 = p1
@@ -76,32 +92,41 @@ class Game:
         self.p1_score = 0
         self.p2_score = 0
 
-        # I want to make sure that the user enters an integer for the number of rounds.
+        # I want to make sure that the user enters
+        # an integer for the number of rounds.
         while True:
             try:
-                self.rounds = int(input(f"How many rounds do you want to play?: "))
-            except ValueError:  # If user enters anything but an integer make user try again.
+                self.rounds = int(input
+                                  (f"How many rounds do you want to play?: "))
+            # If user enters anything but an integer make user try again.
+            except ValueError:
                 print("Sorry, it must be a number!")
                 continue
-            if self.rounds < 0:  # If user tries to enter a negative number, have user try again.
+
+            # If user tries to enter a negative number, have user try again.
+            if self.rounds < 0:
                 print(f"Sorry, your must pick a positive number!")
                 continue
+
+            # User enter correct response!
             else:
-                break  # User enter correct response!
+                break
 
     def play_round(self):
-        # This loop helps reset the game iterator when playing more than 3 rounds.
+        # This loop helps reset the game iterator
+        # when playing more than 3 rounds.
         if Game.position > 1:
             Game.position = -1  # Resets the iterator
         Game.position += 1  # Increase iterator by 1
         move1 = self.p1.move()
         move2 = self.p2.move()
         self.p1.learn(move1, move2)
+        self.p2.learn(move2, move1)
         self.keep_score(move1, move2)
-        print(f"Current Score\nPlayer 1: {self.p1_score}   Player 2: {self.p2_score}\n")
-        # self.p1.learn(move1, move2)
-        # self.p2.learn(move2, move1)
-        time.sleep(1)
+        print(f"Current Score\n"
+              f"Player 1: {self.p1_score}"
+              f"Player 2: {self.p2_score}\n")
+        time.sleep(.6)
 
     def play_game(self):
         print("\nGame start!")
@@ -111,18 +136,23 @@ class Game:
             print(f"Round {game_round + 1}:")
             self.play_round()
         winner = self.announce_winner()  # Runs to find out who the winner is.
-        print(f"{winner} WINS!!\nFinal score\nPlayer 1: {self.p1_score}\nPlayer 2: {self.p2_score}\nGame over!")
+        print(f"{winner}\n"
+              f"Final score\n"
+              f"Player 1: {self.p1_score}\n"
+              f"Player 2: {self.p2_score}\n"
+              f"Game over!\n")
 
     # Figures out who the winner is by comparing scores.
     def announce_winner(self):
         if self.p1_score == self.p2_score:
             return 'Tie Game!'
         elif self.p1_score > self.p2_score:
-            return 'Player 1'
+            return 'Player 1 WINS!'
         else:
-            return 'Player 2'
+            return 'Player 2 WINS!'
 
-    # The game displays the results after each round, including each player's score.
+    # The game displays the results after each round,
+    # including each player's score.
     # At the end, the final score is displayed.
     def keep_score(self, p1, p2):
         if beats(p1, p2) == "Tie":
@@ -144,9 +174,44 @@ if __name__ == '__main__':
             print("Please enter either yes or no.")
         else:
             break  # User enters the correct response and starts game.
+
     if play_game == 'yes':
-        game = Game(Player(), RandomPlayer())
-        game.play_game()
+        while True:
+            try:
+                select_opponent = int(input("Who do you want to"
+                                            "play against?\n"
+                                            "1: RandomPlayer\n"
+                                            "2: ThreeMoves\n"
+                                            "3: AlwaysRock\n"
+                                            "4: CopyCat\n"
+                                            "5: Quit Game\n"
+                                            "Your Choice: "))
+            except ValueError:  # If user doesn't enter a integer
+                print("You must pick a number.")
+                continue
+            # If user enters anything outside of 1 - 5
+            if select_opponent < 0 or select_opponent > 5:
+                print("Pick the correct numbered choice!")
+                continue
+            else:
+                val = int(select_opponent)
+                if val == 1:
+                    game = Game(HumanPlayer(), RandomPlayer())
+                    game.play_game()
+                elif val == 2:
+                    game = Game(HumanPlayer(), ThreeMoves())
+                    game.play_game()
+                elif val == 3:
+                    game = Game(HumanPlayer(), Player())
+                    game.play_game()
+                elif val == 4:
+                    game = Game(HumanPlayer(), CopyCat())
+                    game.play_game()
+                # Sends message if user quits the game
+                else:
+                    print("Thank you for playing!")
+                    break
+
     else:
-        game = Game(RandomPlayer(), RandomPlayer())
+        game = Game(CopyCat(), ThreeMoves())
         game.play_game()
